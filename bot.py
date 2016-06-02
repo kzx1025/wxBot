@@ -78,6 +78,8 @@ class TulingWXBot(WXBot):
                     my_names['remark_name2'] = self.my_account['RemarkName']
 
                 is_at_me = False
+                random_value = random.randint(1,20)
+
                 for detail in msg['content']['detail']:
                     if detail['type'] == 'at':
                         for k in my_names:
@@ -92,6 +94,16 @@ class TulingWXBot(WXBot):
                     else:
                         reply += u"对不起，只认字，其他杂七杂八的我都不认识，,,Ծ‸Ծ,,"
                     self.send_msg_by_uid(reply, msg['user']['id'])
+                else:
+                    if random_value > 15:
+                        src_name = msg['content']['user']['name']
+                        reply = 'to ' + src_name + ': 容我我插句话啊，'
+                        if msg['content']['type'] == 0:  # text message
+                            reply += self.tuling_auto_reply(msg['content']['user']['id'], msg['content']['desc'])
+                        else:
+                            reply += u"我很想知道你说的什么"
+                        self.send_msg_by_uid(reply, msg['user']['id'])
+
 
 
 def main():

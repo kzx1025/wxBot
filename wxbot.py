@@ -119,6 +119,7 @@ class WXBot:
                 f.write(r.text.encode('utf-8'))
         dic = json.loads(r.text)
         self.member_list = dic['MemberList']
+        print self.member_list
 
         special_users = ['newsapp', 'fmessage', 'filehelper', 'weibo', 'qqmail',
                          'fmessage', 'tmessage', 'qmessage', 'qqsync', 'floatbottle',
@@ -158,6 +159,7 @@ class WXBot:
                     self.account_info['group_member'][member['UserName']] = \
                         {'type': 'group_member', 'info': member, 'group': group}
 
+        print self.group_members
         if self.DEBUG:
             with open('contact_list.json', 'w') as f:
                 f.write(json.dumps(self.contact_list))
