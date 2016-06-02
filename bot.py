@@ -78,7 +78,7 @@ class TulingWXBot(WXBot):
                     my_names['remark_name2'] = self.my_account['RemarkName']
 
                 is_at_me = False
-                random_value = random.randint(1,20)
+                random_value = random.randint(1, 20)
 
                 for detail in msg['content']['detail']:
                     if detail['type'] == 'at':
@@ -103,7 +103,6 @@ class TulingWXBot(WXBot):
                         else:
                             reply += u"我很想知道你说的什么"
                         self.send_msg_by_uid(reply, msg['user']['id'])
-
 
 
 def main():

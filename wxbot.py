@@ -223,9 +223,26 @@ class WXBot:
     def get_contact_info(self, uid):
         return self.account_info['normal_member'].get(uid)
 
-
     def get_group_member_info(self, uid):
         return self.account_info['group_member'].get(uid)
+
+    def get_group_member_name2(self, uid):
+        info = self.get_group_member_info(uid)
+        if info is None:
+            return None
+        info = info['info']
+        name = {}
+        if 'RemarkName' in info and info['RemarkName']:
+            name['remark_name'] = info['RemarkName']
+        if 'NickName' in info and info['NickName']:
+            name['nickname'] = info['NickName']
+        if 'DisplayName' in info and info['DisplayName']:
+            name['display_name'] = info['DisplayName']
+        if len(name) == 0:
+            return None
+        else:
+            return name
+
 
     def get_contact_name(self, uid):
         info = self.get_contact_info(uid)
@@ -544,7 +561,8 @@ class WXBot:
                 user['name'] = 'file_helper'
             elif msg['FromUserName'][:2] == '@@':  # Group
                 msg_type_id = 3
-                user['name'] = self.get_contact_prefer_name(self.get_contact_name(user['id']))
+                print 'group_member id:' + user['id']
+                user['name'] = self.get_contact_prefer_name(self.get_group_member_name2(user['id']))
             elif self.is_contact(msg['FromUserName']):  # Contact
                 msg_type_id = 4
                 user['name'] = self.get_contact_prefer_name(self.get_contact_name(user['id']))
