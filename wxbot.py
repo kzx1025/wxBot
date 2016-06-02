@@ -155,11 +155,11 @@ class WXBot:
 
         for group in self.group_members:
             for member in self.group_members[group]:
+                print member['NickName']+', '
                 if member['UserName'] not in self.account_info:
                     self.account_info['group_member'][member['UserName']] = \
                         {'type': 'group_member', 'info': member, 'group': group}
 
-        print self.group_members
         if self.DEBUG:
             with open('contact_list.json', 'w') as f:
                 f.write(json.dumps(self.contact_list))
