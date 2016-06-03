@@ -587,6 +587,7 @@ class WXBot:
                        'content': content,
                        'to_user_id': msg['ToUserName'],
                        'user': user}
+            print message
             self.handle_msg_all(message)
 
     def schedule(self):
