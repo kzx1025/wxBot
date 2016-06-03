@@ -104,7 +104,7 @@ class TulingWXBot(WXBot):
                         reply += self.tuling_auto_reply(msg['content']['user']['id'], msg['content']['desc'])
                     else:
                         reply += u"我很想知道你说的什么"
-                    self.send_msg_by_uid(reply, msg['user']['id'])
+                    self.send_msg_by_uid(reply, msg['content']['user']['id'])
 
 
 def main():
