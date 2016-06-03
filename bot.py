@@ -103,7 +103,8 @@ class TulingWXBot(WXBot):
 
                 if is_at_me is False and random_value > 15:
                     src_name = msg['content']['user']['name']
-                    reply = preix[random_preix]
+                    reply = 'to ' + src_name + ': '
+                    reply += preix[random_preix]
                     if msg['content']['type'] == 0:  # text message
                         reply += self.tuling_auto_reply(msg['content']['user']['id'], msg['content']['desc'])
                         if random_value > 12:

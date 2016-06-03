@@ -563,8 +563,9 @@ class WXBot:
                 user['name'] = 'file_helper'
             elif msg['FromUserName'][:2] == '@@':  # Group
                 msg_type_id = 3
-                print 'group_member id:' + user['id']
-                user['name'] = self.get_contact_prefer_name(self.get_group_member_name2(user['id']))
+                content = self.extract_msg_content(msg_type_id, msg)
+                print 'group_member id:' + content['user']['id']
+                user['name'] = self.get_contact_prefer_name(self.get_group_member_name2(content['user']['id']))
             elif self.is_contact(msg['FromUserName']):  # Contact
                 msg_type_id = 4
                 user['name'] = self.get_contact_prefer_name(self.get_contact_name(user['id']))
