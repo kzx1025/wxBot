@@ -99,12 +99,12 @@ class TulingWXBot(WXBot):
 
                 if is_at_me==False and random_value > 15:
                     src_name = msg['content']['user']['name']
-                    reply = u"~"
+                    reply = u"容我说一句，"
                     if msg['content']['type'] == 0:  # text message
                         reply += self.tuling_auto_reply(msg['content']['user']['id'], msg['content']['desc'])
                     else:
                         reply += u"我很想知道你说的什么"
-                    print "chahua"+reply
+                    print u"主动发言:"+reply
                     self.send_msg_by_uid(reply, msg['user']['id'])
 
 
