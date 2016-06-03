@@ -105,7 +105,7 @@ class TulingWXBot(WXBot):
                     else:
                         reply += u"我很想知道你说的什么"
                     print "chahua"+reply
-                    self.send_msg_by_uid(reply, msg['content']['user']['id'])
+                    self.send_msg_by_uid(reply, msg['user']['id'])
 
 
 def main():
