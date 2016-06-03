@@ -224,7 +224,7 @@ class WXBot:
         return self.account_info['normal_member'].get(uid)
 
     def get_group_member_info(self, uid):
-        print elf.account_info['group_member']
+        print self.account_info['group_member']
         return self.account_info['group_member'].get(uid)
 
     def get_group_member_name2(self, uid):
