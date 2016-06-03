@@ -91,19 +91,26 @@ class TulingWXBot(WXBot):
                     reply = 'to ' + src_name + ': '
                     if msg['content']['type'] == 0:  # text message
                         reply += self.tuling_auto_reply(msg['content']['user']['id'], msg['content']['desc'])
+                        if random_value>12:
+                            reply += '!'
                     else:
                         reply += u"对不起，只认字，其他杂七杂八的我都不认识，,,Ծ‸Ծ,,"
                     self.send_msg_by_uid(reply, msg['user']['id'])
 
                 print random_value
+                random_preix = random.randint(0, 6)
+                preix = [u'我说句话，',u'我插一句，', u'讲道理嘛，', u'我觉得啊，', u'哎我说，',u'',u'']
 
-                if is_at_me==False and random_value > 15:
+                if is_at_me is False and random_value > 15:
                     src_name = msg['content']['user']['name']
-                    reply = u"容我说一句，"
+                    reply = preix[random_preix]
                     if msg['content']['type'] == 0:  # text message
                         reply += self.tuling_auto_reply(msg['content']['user']['id'], msg['content']['desc'])
+                        if random_value > 12:
+                            reply += '!'
                     else:
                         reply += u"我很想知道你说的什么"
+                    time.sleep(3)
                     print u"主动发言:"+reply
                     self.send_msg_by_uid(reply, msg['user']['id'])
 

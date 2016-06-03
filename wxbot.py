@@ -224,10 +224,12 @@ class WXBot:
         return self.account_info['normal_member'].get(uid)
 
     def get_group_member_info(self, uid):
+        print elf.account_info['group_member']
         return self.account_info['group_member'].get(uid)
 
     def get_group_member_name2(self, uid):
         info = self.get_group_member_info(uid)
+
         if info is None:
             return None
         info = info['info']
@@ -548,7 +550,7 @@ class WXBot:
         :param r: 原始微信消息
         """
         for msg in r['AddMsgList']:
-            print 'origin msg:'+str(msg)
+            #print 'origin msg:'+str(msg)
             user = {'id': msg['FromUserName'], 'name': 'unknown'}
             if msg['MsgType'] == 51:  # init message
                 msg_type_id = 0
