@@ -4,6 +4,7 @@
 from wxbot import *
 import ConfigParser
 import json
+import recomend
 
 
 class TulingWXBot(WXBot):
@@ -60,12 +61,38 @@ class TulingWXBot(WXBot):
                     self.robot_switch = True
                     self.send_msg_by_uid(u'[Robot]' + u'机器人已开启！', msg['to_user_id'])
 
+    def recommend(self, userid, msg_data):
+        movie_cmd = [u'推荐一部电影', u'来一部电影', u'推荐电影', u'换一部', u'来部电影', u'推荐部电影', u'求推荐电影', u'有什么好看的电影']
+        smallmovie_cmd = [u'来个种子', u'我要看片', u'来个番号']
+        for i in movie_cmd:
+            if i == msg_data:
+                try:
+                    reply = recomend.recommend_movie()
+                    self.send_msg_by_uid(reply, userid)
+                except:
+                    self.send_msg_by_uid(u'抱歉，我心情不太好。等下再给你推荐电影吧', userid)
+                return True
+        for i in smallmovie_cmd:
+            if i == msg_data:
+                try:
+                    reply = recomend.recommend_smallmovie()
+                    self.send_msg_by_uid(reply, userid)
+                except:
+                    self.send_msg_by_uid(u'怎么天天想着看片！', userid)
+                return True
+        return False
+
     def handle_msg_all(self, msg):
+
         if not self.robot_switch and msg['msg_type_id'] != 1:
             return
         if msg['msg_type_id'] == 1 and msg['content']['type'] == 0:  # reply to self
             self.auto_switch(msg)
         elif msg['msg_type_id'] == 4 and msg['content']['type'] == 0:  # text message from contact
+            # 处理推荐系统逻辑
+            if self.recommend(msg['user']['id'], msg['content']['data']):
+                return
+            # 处理聊天逻辑
             self.send_msg_by_uid(self.tuling_auto_reply(msg['user']['id'], msg['content']['data']), msg['user']['id'])
         elif msg['msg_type_id'] == 3 and msg['content']['type'] == 0:  # group text message
             if 'detail' in msg['content']:
@@ -78,7 +105,7 @@ class TulingWXBot(WXBot):
                     my_names['remark_name2'] = self.my_account['RemarkName']
 
                 is_at_me = False
-                random_value = random.randint(1, 20)
+                random_value = random.randint(1, 100)
 
                 for detail in msg['content']['detail']:
                     if detail['type'] == 'at':
@@ -86,28 +113,50 @@ class TulingWXBot(WXBot):
                             if my_names[k] and my_names[k] == detail['value']:
                                 is_at_me = True
                                 break
+                #处理机器人是否退出流程
+
+
+                #判断机器人是否退出
+
+                # 处理推荐系统逻辑
+                if self.recommend(msg['user']['id'], msg['content']['desc']):
+                    return
+
                 if is_at_me:
-                    src_name = msg['content']['user']['name']
-                    reply = 'to ' + src_name + ': '
+                    src_name = msg['user']['name']
+                    reply = '@' + src_name + ': '
                     if msg['content']['type'] == 0:  # text message
                         reply += self.tuling_auto_reply(msg['content']['user']['id'], msg['content']['desc'])
-                        if random_value>12:
+                        if random_value > 70:
                             reply += '!'
                     else:
                         reply += u"对不起，只认字，其他杂七杂八的我都不认识，,,Ծ‸Ծ,,"
                     self.send_msg_by_uid(reply, msg['user']['id'])
 
                 print random_value
-                random_preix = random.randint(0, 6)
-                preix = [u'我说句话，',u'我插一句，', u'讲道理嘛，', u'我觉得啊，', u'哎我说，',u'',u'']
 
-                if is_at_me is False and random_value > 15:
-                    src_name = msg['content']['user']['name']
-                    reply = 'to ' + src_name + ': '
-                    reply += preix[random_preix]
+                index = random.randint(0, 5)
+                random_say = [u'23333333', u'能别说话了么，烦',u'呵呵',u'哦？',u'能不能聊点别的', u'可以的']
+
+                if is_at_me is False and random_value > 95:
+                    src_name = msg['user']['name']
+                    reply = ''
                     if msg['content']['type'] == 0:  # text message
                         reply += self.tuling_auto_reply(msg['content']['user']['id'], msg['content']['desc'])
-                        if random_value > 12:
+                        if random_value > 98:
+                            reply += '!'
+                    else:
+                        reply += u"我很想知道你说的什么"
+                    time.sleep(3)
+                    print u"主动发言:"+reply
+                    self.send_msg_by_uid(reply, msg['user']['id'])
+
+                if is_at_me is False and random_value <=95 and random_value >90:
+                    src_name = msg['user']['name']
+                    reply = ''
+                    if msg['content']['type'] == 0:  # text message
+                        reply += random_say[index]
+                        if random_value > 93:
                             reply += '!'
                     else:
                         reply += u"我很想知道你说的什么"
