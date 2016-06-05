@@ -80,16 +80,3 @@ def recommend_smallmovie():
     return message
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-recommend_smallmovie()

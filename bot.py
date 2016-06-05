@@ -5,6 +5,7 @@ from wxbot import *
 import ConfigParser
 import json
 import recomend
+import myredispool
 
 
 class TulingWXBot(WXBot):
@@ -13,6 +14,7 @@ class TulingWXBot(WXBot):
 
         self.tuling_key = ""
         self.robot_switch = True
+        self.redis = myredispool.RedisCache()
 
         try:
             cf = ConfigParser.ConfigParser()
@@ -94,7 +96,28 @@ class TulingWXBot(WXBot):
                 return
             # 处理聊天逻辑
             self.send_msg_by_uid(self.tuling_auto_reply(msg['user']['id'], msg['content']['data']), msg['user']['id'])
-        elif msg['msg_type_id'] == 3 and msg['content']['type'] == 0:  # group text message
+        elif msg['msg_type_id'] == 3 and (msg['content']['type'] == 0 or msg['content']['type'] == 10):  # group text message
+            # 处理撤回逻辑
+            if msg['content']['redraw'] == 1:
+                msg_data = msg['content']['data']
+                print msg_data
+                old_msgid = re.compile('<msgid>(.*)</msgid>').findall(msg_data)[0]
+                print 'old_msgid is ' + old_msgid
+                redraw_msg = self.redis.get_data(old_msgid)
+                print type(redraw_msg)
+
+                print 'redraw_msg is ' + str(redraw_msg).replace("\\\\", "\\")
+                #redraw_json = json.loads(str(redraw_msg).replace("\\\\", "\\").replace("\'", "\""))
+                #print type(redraw_json)
+                #print redraw_json['data']
+                username =  re.compile(': (.*), \'userid\'').findall(redraw_msg)[0]
+                print username
+                data = re.compile('\'data\': (.*)}').findall(redraw_msg)[0]
+                reply = u'刚才'+username.decode("unicode_escape").replace("\'","").replace("u","")+u'撤回得是：'+\
+                        data.decode("unicode_escape").replace("\'","").replace("u","")
+                self.send_msg_by_uid(reply, msg['user']['id'])
+
+            # 处理文本消息
             if 'detail' in msg['content']:
                 my_names = self.get_group_member_name(self.my_account['UserName'], msg['user']['id'])
                 if my_names is None:
@@ -103,6 +126,15 @@ class TulingWXBot(WXBot):
                     my_names['nickname2'] = self.my_account['NickName']
                 if 'RemarkName' in self.my_account and self.my_account['RemarkName']:
                     my_names['remark_name2'] = self.my_account['RemarkName']
+
+                # 将消息存入redis
+                msg_id = msg['msg_id']
+                message = {'data': msg['content']['desc'], 'userid': msg['user']['id'], 'username': msg['user']['name']}
+                #msg_json = json.loads(message)
+                success = self.redis.set_data(msg_id, message)
+                if success:
+                    print (msg_id, message)
+                    print u"群消息存入redis成功"
 
                 is_at_me = False
                 random_value = random.randint(1, 100)
@@ -113,10 +145,12 @@ class TulingWXBot(WXBot):
                             if my_names[k] and my_names[k] == detail['value']:
                                 is_at_me = True
                                 break
+
                 #处理机器人是否退出流程
 
 
                 #判断机器人是否退出
+
 
                 # 处理推荐系统逻辑
                 if self.recommend(msg['user']['id'], msg['content']['desc']):

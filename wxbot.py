@@ -115,7 +115,7 @@ class WXBot:
         r = self.session.post(url, data='{}')
         r.encoding = 'utf-8'
         if self.DEBUG:
-            with open('contacts.json', 'w') as f:
+            with open('data/contacts.json', 'w') as f:
                 f.write(r.text.encode('utf-8'))
         dic = json.loads(r.text)
         self.member_list = dic['MemberList']
@@ -161,19 +161,19 @@ class WXBot:
                         {'type': 'group_member', 'info': member, 'group': group}
 
         if self.DEBUG:
-            with open('contact_list.json', 'w') as f:
+            with open('data/contact_list.json', 'w') as f:
                 f.write(json.dumps(self.contact_list))
-            with open('special_list.json', 'w') as f:
+            with open('data/special_list.json', 'w') as f:
                 f.write(json.dumps(self.special_list))
-            with open('group_list.json', 'w') as f:
+            with open('data/group_list.json', 'w') as f:
                 f.write(json.dumps(self.group_list))
-            with open('public_list.json', 'w') as f:
+            with open('data/public_list.json', 'w') as f:
                 f.write(json.dumps(self.public_list))
-            with open('member_list.json', 'w') as f:
+            with open('data/member_list.json', 'w') as f:
                 f.write(json.dumps(self.member_list))
-            with open('group_users.json', 'w') as f:
+            with open('data/group_users.json', 'w') as f:
                 f.write(json.dumps(self.group_members))
-            with open('account_info.json', 'w') as f:
+            with open('data/account_info.json', 'w') as f:
                 f.write(json.dumps(self.account_info))
         return True
 
@@ -397,6 +397,7 @@ class WXBot:
         msg_id = msg['MsgId']
 
         msg_content = {}
+        msg_content['redraw'] = 0
         if msg_type_id == 0:
             return {'type': 11, 'data': ''}
         elif msg_type_id == 2:  # File Helper
@@ -521,6 +522,7 @@ class WXBot:
         elif mtype == 10002:
             msg_content['type'] = 10
             msg_content['data'] = content
+            msg_content['redraw'] = 1
             if self.DEBUG:
                 print '    %s[Redraw]' % msg_prefix
         elif mtype == 10000:  # unknown, maybe red packet, or group invite
@@ -578,6 +580,8 @@ class WXBot:
             else:
                 msg_type_id = 99
                 user['name'] = 'unknown'
+                # 可能是添加好友，更新通讯录
+                self.get_contact()
             if not user['name']:
                 user['name'] = 'unknown'
             user['name'] = HTMLParser.HTMLParser().unescape(user['name'])
