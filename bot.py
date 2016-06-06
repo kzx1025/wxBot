@@ -16,6 +16,7 @@ class TulingWXBot(WXBot):
         self.robot_switch = True
         self.redis = myredispool.RedisCache()
         self.master_id = ''
+        self.master_mode = 0
 
         try:
             cf = ConfigParser.ConfigParser()
@@ -97,22 +98,40 @@ class TulingWXBot(WXBot):
             print msg['user']['id']
             if msg['content']['data'] == 'open the console':
                 self.master_id = msg['user']['id']
+                self.master_mode = 1
+                self.send_msg_by_uid(u"管理员模式开启", msg['user']['id'])
+                return
             if msg['content']['data'] == 'close the console':
                 self.master_id = ''
+                self.master_mode = 0
+                self.send_msg_by_uid(u"管理员模式关闭", msg['user']['id'])
+                return
                 # 判断是否为管理员
             if msg['user']['id'] == self.master_id and msg['content']['data'] != 'open the console':
-                notice = msg['content']['data']
                 for group in self.group_members:
                     print group
                     self.send_msg_by_uid(msg['content']['data'], group)
+                self.send_msg_by_uid(u"公告发送成功", msg['user']['id'])
                 return
+            if self.master_mode == 1:
+                return
+
             # 处理推荐系统逻辑
             if self.recommend(msg['user']['id'], msg['content']['data']):
                 return
             # 处理聊天逻辑
             self.send_msg_by_uid(self.tuling_auto_reply(msg['user']['id'], msg['content']['data']), msg['user']['id'])
-        elif msg['msg_type_id'] == 3 and (msg['content']['type'] == 0 or msg['content']['type'] == 10):  # group text message
+
+        elif msg['msg_type_id'] == 3 and (msg['content']['type'] == 0 or msg['content']['type'] == 10 or msg['content']['type'] ==3
+                                          or msg['content']['type'] == 4):  # group text message
+            if self.master_mode == 1:
+                #if msg['content']['data'] == 'test':
+                   # print 'send picture!'
+                   # self.send_image('data/image/img_476620686838734673.jpg', msg['user']['id'])
+                    #self.send_file('data/voice/voice_6364321762328836396.mp3', msg['user']['id'])
+                return
             # 处理撤回逻辑
+            print 'group message'
             if msg['content']['redraw'] == 1:
                 msg_data = msg['content']['data']
                 print msg_data
@@ -127,10 +146,42 @@ class TulingWXBot(WXBot):
                 #print redraw_json['data']
                 username =  re.compile(': (.*), \'userid\'').findall(redraw_msg)[0]
                 print username
-                data = re.compile('\'data\': (.*)}').findall(redraw_msg)[0]
-                reply = u'刚才'+username.decode("unicode_escape").replace("\'","").replace("u","")+u'撤回得是：'+\
+                redraw_type = re.compile('\'type\': (.*)}').findall(redraw_msg)[0]
+                print redraw_type
+                data = re.compile('\'data\': (.*), \'type\'').findall(redraw_msg)[0]
+                if int(redraw_type) == 3:
+                    print data.replace('u', '').replace('\'', '')
+                    self.send_image(data.replace('u', '').replace('\'', ''), msg['user']['id'])
+                    reply = u'刚才'+username.decode("unicode_escape").replace("\'","").replace("u","")+u'撤回得是：'+\
+                        u'这张图片'
+                    self.send_msg_by_uid(reply, msg['user']['id'])
+                elif int(redraw_type) == 4:
+                    self.send_file(data.replace('u', '').replace('\'', ''), msg['user']['id'])
+                    reply = u'刚才'+username.decode("unicode_escape").replace("\'","").replace("u","")+u'撤回得是：'+\
+                        u'这段语音'
+                    self.send_msg_by_uid(reply, msg['user']['id'])
+                else:
+                    reply = u'刚才'+username.decode("unicode_escape").replace("\'","").replace("u","")+u'撤回得是：'+\
                         data.decode("unicode_escape").replace("\'","").replace("u","")
-                self.send_msg_by_uid(reply, msg['user']['id'])
+                    self.send_msg_by_uid(reply, msg['user']['id'])
+
+            # 将消息存入redis
+            msg_id = msg['msg_id']
+            print msg_id
+            redis_data = ''
+            if msg['content']['type'] == 0:
+                redis_data = msg['content']['desc']
+            elif msg['content']['type'] == 3:
+                redis_data = msg['content']['image_url']
+            elif msg['content']['type'] == 4:
+                redis_data = msg['content']['voice_url']
+            else:
+                redis_data = u'一种未知事物'
+            message = {'data': redis_data, 'userid': msg['user']['id'], 'username': msg['user']['name'], 'type': msg['content']['type']}
+            success = self.redis.set_data(msg_id, message)
+            if success:
+                print (msg_id, message)
+                print u"群消息存入redis成功"
 
             # 处理文本消息
             if 'detail' in msg['content']:
@@ -142,14 +193,6 @@ class TulingWXBot(WXBot):
                 if 'RemarkName' in self.my_account and self.my_account['RemarkName']:
                     my_names['remark_name2'] = self.my_account['RemarkName']
 
-                # 将消息存入redis
-                msg_id = msg['msg_id']
-                message = {'data': msg['content']['desc'], 'userid': msg['user']['id'], 'username': msg['user']['name']}
-                #msg_json = json.loads(message)
-                success = self.redis.set_data(msg_id, message)
-                if success:
-                    print (msg_id, message)
-                    print u"群消息存入redis成功"
 
                 is_at_me = False
                 random_value = random.randint(1, 100)

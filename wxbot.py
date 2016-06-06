@@ -16,6 +16,8 @@ import random
 from traceback import format_exc
 from requests.exceptions import ConnectionError, ReadTimeout
 import HTMLParser
+import tools
+import mimetypes
 
 UNKONWN = 'unkonwn'
 SUCCESS = '200'
@@ -399,6 +401,8 @@ class WXBot:
 
         msg_content = {}
         msg_content['redraw'] = 0
+        msg_content['image_url'] = ''
+        msg_content['voice_url'] = ''
         if msg_type_id == 0:
             return {'type': 11, 'data': ''}
         elif msg_type_id == 2:  # File Helper
@@ -452,15 +456,17 @@ class WXBot:
             msg_content['type'] = 3
             msg_content['data'] = self.get_msg_img_url(msg_id)
             msg_content['img'] = self.session.get(msg_content['data']).content.encode('hex')
+            image = self.get_msg_img(msg_id)
+            msg_content['image_url'] = image
             if self.DEBUG:
-                image = self.get_msg_img(msg_id)
                 print '    %s[Image] %s' % (msg_prefix, image)
         elif mtype == 34:
             msg_content['type'] = 4
             msg_content['data'] = self.get_voice_url(msg_id)
             msg_content['voice'] = self.session.get(msg_content['data']).content.encode('hex')
+            voice = self.get_voice(msg_id)
+            msg_content['voice_url'] = voice
             if self.DEBUG:
-                voice = self.get_voice(msg_id)
                 print '    %s[Voice] %s' % (msg_prefix, voice)
         elif mtype == 42:
             msg_content['type'] = 5
@@ -674,6 +680,85 @@ class WXBot:
         dic = r.json()
         return dic['BaseResponse']['Ret'] == 0
 
+    def send_file(self, fileDir, toUserName = None):
+        if toUserName is None: toUserName = self.storageClass.userName
+        mediaId = self.__upload_file(fileDir)
+        if mediaId is None: return False
+        url = '%s/webwxsendappmsg?fun=async&f=json'%self.base_uri
+        payloads = {
+                'BaseRequest': self.base_request,
+                'Msg': {
+                    'Type': 6,
+                    'Content': ("<appmsg appid='wxeb7ec651dd0aefa9' sdkver=''><title>%s</title>"%os.path.basename(fileDir) +
+                        "<des></des><action></action><type>6</type><content></content><url></url><lowurl></lowurl>" +
+                        "<appattach><totallen>%s</totallen><attachid>%s</attachid>"%(str(os.path.getsize(fileDir)), mediaId) +
+                        "<fileext>%s</fileext></appattach><extinfo></extinfo></appmsg>"%os.path.splitext(fileDir)[1].replace('.','')
+                        ).encode('utf8'),
+                    'FromUserName': self.my_account['UserName'],
+                    'ToUserName': toUserName.encode('utf8'),
+                    'LocalID': str(time.time() * 1e7),
+                    'ClientMsgId': str(time.time() * 1e7), }, }
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36',
+            'Content-Type': 'application/json;charset=UTF-8', }
+        r = self.session.post(url, data = json.dumps(payloads, ensure_ascii = False), headers = headers)
+        return True
+
+
+    def __upload_file(self, fileDir, isPicture = False):
+        if not tools.check_file(fileDir): return
+        url = 'https://file%s.wx.qq.com/cgi-bin/mmwebwx-bin/webwxuploadmedia?f=json'%('2' if '2' in self.base_uri else '')
+        # save it on server
+        fileSize = str(os.path.getsize(fileDir))
+        cookiesList = {name:data for name,data in self.session.cookies.items()}
+        fileType = mimetypes.guess_type(fileDir)[0] or 'application/octet-stream'
+        files = {
+                'id': (None, 'WU_FILE_0'),
+                'name': (None, os.path.basename(fileDir)),
+                'type': (None, fileType),
+                'lastModifiedDate': (None, time.strftime('%a %b %d %Y %H:%M:%S GMT+0800 (CST)')),
+                'size': (None, fileSize),
+                'mediatype': (None, 'pic' if isPicture else 'doc'),
+                'uploadmediarequest': (None, json.dumps({
+                    'BaseRequest': self.base_request,
+                    'ClientMediaId': int(time.time()),
+                    'TotalLen': fileSize,
+                    'StartPos': 0,
+                    'DataLen': fileSize,
+                    'MediaType': 4,
+                    }, separators = (',', ':'))),
+                'webwx_data_ticket': (None, cookiesList['webwx_data_ticket']),
+                'pass_ticket': (None, 'undefined'),
+                'filename' : (os.path.basename(fileDir), open(fileDir, 'rb'), fileType),
+                }
+        headers = { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36', }
+        r = self.session.post(url, files = files, headers = headers)
+        return json.loads(r.text)['MediaId']
+
+    def send_image(self, fileDir, toUserName = None):
+        if toUserName is None: toUserName = self.my_account['UserName']
+        mediaId = self.__upload_file(fileDir, isPicture = not fileDir[-4:] == '.gif')
+        if mediaId is None: return False
+        url = '%s/webwxsendmsgimg?fun=async&f=json'%self.base_uri
+        payloads = {
+                'BaseRequest': self.base_request,
+                'Msg': {
+                    'Type': 3,
+                    'MediaId': mediaId,
+                    'FromUserName': self.my_account['UserName'],
+                    'ToUserName': toUserName.encode('utf8'),
+                    'LocalID': str(time.time() * 1e7),
+                    'ClientMsgId': str(time.time() * 1e7), }, }
+        if fileDir[-4:] == '.gif':
+            url = '%s/webwxsendemoticon?fun=sys'%self.base_uri
+            payloads['Msg']['Type'] = 47
+            payloads['Msg']['EmojiFlag'] = 2
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36',
+            'Content-Type': 'application/json;charset=UTF-8', }
+        r = self.session.post(url, data = json.dumps(payloads, ensure_ascii = False), headers = headers)
+        return True
+
     def get_user_id(self, name):
         if name == '':
             return None
@@ -720,6 +805,8 @@ class WXBot:
             if self.DEBUG:
                 print '[ERROR] This user does not exist .'
             return True
+
+
 
     @staticmethod
     def search_content(key, content, fmat='attr'):
@@ -996,7 +1083,7 @@ class WXBot:
         url = self.base_uri + '/webwxgetmsgimg?MsgID=%s&skey=%s' % (msgid, self.skey)
         r = self.session.get(url)
         data = r.content
-        fn = 'img_' + msgid + '.jpg'
+        fn = 'data/image/img_' + msgid + '.jpg'
         with open(fn, 'wb') as f:
             f.write(data)
         return fn
@@ -1013,7 +1100,7 @@ class WXBot:
         url = self.base_uri + '/webwxgetvoice?msgid=%s&skey=%s' % (msgid, self.skey)
         r = self.session.get(url)
         data = r.content
-        fn = 'voice_' + msgid + '.mp3'
+        fn = 'data/voice/voice_' + msgid + '.mp3'
         with open(fn, 'wb') as f:
             f.write(data)
         return fn
