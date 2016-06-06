@@ -64,7 +64,7 @@ target/
 *.mp3
 *.json
 .idea/
-/data/
+data/*.json
 
 qr.png
 /*.jpg

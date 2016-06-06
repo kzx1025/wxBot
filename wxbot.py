@@ -193,6 +193,7 @@ class WXBot:
         for group in dic['ContactList']:
             gid = group['UserName']
             members = group['MemberList']
+            #print gid
             group_members[gid] = members
             encry_chat_room_id[gid] = group['EncryChatRoomId']
         self.group_members = group_members

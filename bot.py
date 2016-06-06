@@ -15,6 +15,7 @@ class TulingWXBot(WXBot):
         self.tuling_key = ""
         self.robot_switch = True
         self.redis = myredispool.RedisCache()
+        self.master_id = ''
 
         try:
             cf = ConfigParser.ConfigParser()
@@ -91,6 +92,20 @@ class TulingWXBot(WXBot):
         if msg['msg_type_id'] == 1 and msg['content']['type'] == 0:  # reply to self
             self.auto_switch(msg)
         elif msg['msg_type_id'] == 4 and msg['content']['type'] == 0:  # text message from contact
+            # 处理管理员公告
+                # 进行密码登录
+            print msg['user']['id']
+            if msg['content']['data'] == 'open the console':
+                self.master_id = msg['user']['id']
+            if msg['content']['data'] == 'close the console':
+                self.master_id = ''
+                # 判断是否为管理员
+            if msg['user']['id'] == self.master_id and msg['content']['data'] != 'open the console':
+                notice = msg['content']['data']
+                for group in self.group_members:
+                    print group
+                    self.send_msg_by_uid(msg['content']['data'], group)
+                return
             # 处理推荐系统逻辑
             if self.recommend(msg['user']['id'], msg['content']['data']):
                 return
