@@ -15,3 +15,5 @@ def check_file(fileDir):
         return True
     except:
         return False
+
+#print u'\u5f20\u96c4'

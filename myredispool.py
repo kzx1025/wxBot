@@ -8,7 +8,7 @@ import json
 import re
 
 class RedisDBConfig:
-    HOST = '211.69.198.208'
+    HOST = '127.0.0.1'
     PORT = 6379
     DBID = 0
     EXPIRE = 1800
@@ -64,6 +64,7 @@ class RedisCache(object):
 
 if __name__ == '__main__':
     print RedisCache().set_data('Testkey', "Simple Test")
+    print RedisCache().get_data('Testkey')
     redraw_msg =  RedisCache().get_data('2121948384685456854')
     print redraw_msg
     print type(redraw_msg)

@@ -120,6 +120,7 @@ class WXBot:
             with open('data/contacts.json', 'w') as f:
                 f.write(r.text.encode('utf-8'))
         dic = json.loads(r.text)
+        #print dic
         self.member_list = dic['MemberList']
         print self.member_list
 
@@ -195,7 +196,7 @@ class WXBot:
         for group in dic['ContactList']:
             gid = group['UserName']
             members = group['MemberList']
-            #print gid
+            print gid
             group_members[gid] = members
             encry_chat_room_id[gid] = group['EncryChatRoomId']
         self.group_members = group_members
@@ -211,6 +212,7 @@ class WXBot:
         if gid not in self.group_members:
             return None
         group = self.group_members[gid]
+        # print group
         for member in group:
             if member['UserName'] == uid:
                 names = {}
@@ -412,10 +414,13 @@ class WXBot:
             uid = content[:sp]
             content = content[sp:]
             content = content.replace('<br/>', '')
+            print content
             uid = uid[:-1]
             name = self.get_contact_prefer_name(self.get_contact_name(uid))
             if not name:
+                print uid
                 name = self.get_group_member_prefer_name(self.get_group_member_name(uid, msg['FromUserName']))
+                print name
             if not name:
                 name = 'unknown'
             msg_content['user'] = {'id': uid, 'name': name}
@@ -806,8 +811,6 @@ class WXBot:
                 print '[ERROR] This user does not exist .'
             return True
 
-
-
     @staticmethod
     def search_content(key, content, fmat='attr'):
         if fmat == 'attr':
@@ -969,6 +972,7 @@ class WXBot:
         r = self.session.post(url, data=json.dumps(params))
         r.encoding = 'utf-8'
         dic = json.loads(r.text)
+        print dic
         self.sync_key = dic['SyncKey']
         self.my_account = dic['User']
         self.sync_key_str = '|'.join([str(keyVal['Key']) + '_' + str(keyVal['Val'])
@@ -988,6 +992,7 @@ class WXBot:
         r = self.session.post(url, data=json.dumps(params))
         r.encoding = 'utf-8'
         dic = json.loads(r.text)
+        print dic
         return dic['BaseResponse']['Ret'] == 0
 
     def test_sync_check(self):

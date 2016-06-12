@@ -185,7 +185,8 @@ class TulingWXBot(WXBot):
 
             # 处理文本消息
             if 'detail' in msg['content']:
-                my_names = self.get_group_member_name(self.my_account['UserName'], msg['user']['id'])
+                #my_names = self.get_group_member_name(self.my_account['UserName'], msg['user']['id'])
+                my_names = self.get_group_member_name(msg['user']['id'], msg['to_user_id'])
                 if my_names is None:
                     my_names = {}
                 if 'NickName' in self.my_account and self.my_account['NickName']:
@@ -230,7 +231,7 @@ class TulingWXBot(WXBot):
                 index = random.randint(0, 5)
                 random_say = [u'23333333', u'能别说话了么，烦',u'呵呵',u'哦？',u'能不能聊点别的', u'可以的']
 
-                if is_at_me is False and random_value > 95:
+                if is_at_me is False and random_value > 98:
                     src_name = msg['user']['name']
                     reply = ''
                     if msg['content']['type'] == 0:  # text message
@@ -243,7 +244,7 @@ class TulingWXBot(WXBot):
                     print u"主动发言:"+reply
                     self.send_msg_by_uid(reply, msg['user']['id'])
 
-                if is_at_me is False and random_value <=95 and random_value >90:
+                if is_at_me is False and random_value <=-1 and random_value >100:
                     src_name = msg['user']['name']
                     reply = ''
                     if msg['content']['type'] == 0:  # text message
