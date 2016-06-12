@@ -65,6 +65,7 @@ target/
 *.json
 .idea/
 data/*.json
+data/*.ttc
 /data/image/*.jpg
 data/image/*.png
 data/voice/*.mp3
@@ -73,3 +74,4 @@ qr.png
 /*.jpg
 *.ini
 *.un~
+
