@@ -202,6 +202,28 @@ class WXBot:
         self.group_members = group_members
         self.encry_chat_room_id_list = encry_chat_room_id
 
+    def get_all_group_member_name(self, gid):
+        """
+        获取群聊中所有成员的名称
+        :param gid:
+        :return:
+        """
+        if gid not in self.group_members:
+            return None
+        group = self.group_members[gid]
+        group_member_name = []
+        for member in group:
+            names = {}
+            if 'RemarkName' in member and member['RemarkName']:
+                names['remark_name'] = member['RemarkName']
+            if 'NickName' in member and member['NickName']:
+                names['nickname'] = member['NickName']
+            if 'DisplayName' in member and member['DisplayName']:
+                names['display_name'] = member['DisplayName']
+            final_name = self.get_group_member_prefer_name(names)
+            group_member_name.append(final_name)
+        return group_member_name
+
     def get_group_member_name(self, gid, uid):
         """
         获取群聊中指定成员的名称信息
@@ -405,6 +427,8 @@ class WXBot:
         msg_content['redraw'] = 0
         msg_content['image_url'] = ''
         msg_content['voice_url'] = ''
+        msg_content['is_hongbao'] = 0
+        msg_content['is_entergroup'] = 0
         if msg_type_id == 0:
             return {'type': 11, 'data': ''}
         elif msg_type_id == 2:  # File Helper
@@ -492,6 +516,13 @@ class WXBot:
         elif mtype == 47:
             msg_content['type'] = 6
             msg_content['data'] = self.search_content('cdnurl', content)
+            print 'emoji_url' + msg_content['data']
+            if not 'unknown' in msg_content['data']:
+               r = self.session.get(msg_content['data'])
+               data = r.content
+               fn = 'data/emoji/emoji_' + msg_content['data'].replace('/', '_') + '.gif'
+               with open(fn, 'wb') as f:
+                   f.write(data)
             if self.DEBUG:
                 print '    %s[Animation] %s' % (msg_prefix, msg_content['data'])
         elif mtype == 49:
@@ -539,6 +570,14 @@ class WXBot:
                 print '    %s[Redraw]' % msg_prefix
         elif mtype == 10000:  # unknown, maybe red packet, or group invite
             msg_content['type'] = 12
+            if u'红包' in msg['Content']:
+                print '有红包！'
+                msg_content['is_hongbao'] = 1
+            elif u'邀请' in msg['Content']:
+                print '被拉入某群!'
+                msg_content['is_entergroup'] = 1
+                self.get_contact()
+
             msg_content['data'] = msg['Content']
             if self.DEBUG:
                 print '    [Unknown]'
@@ -739,6 +778,35 @@ class WXBot:
         headers = { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36', }
         r = self.session.post(url, files = files, headers = headers)
         return json.loads(r.text)['MediaId']
+
+    def send_random_emoji(self, toUserName = None):
+        files = os.listdir('data/emoji/')
+        random_index = random.randint(0, len(files)-1)
+        if len(files) == 1:
+            return None
+        emoji_file = 'data/emoji/'+files[random_index]
+        self.send_emoji(emoji_file, toUserName)
+
+    def send_emoji(self, fileDir, toUserName = None):
+        mediaId = self.__upload_file(fileDir, isPicture = not fileDir[-4:] == '.gif')
+        if mediaId is None: return False
+        url = '%s/webwxsendemoticon?fun=sys'%self.base_uri
+        payloads = {
+                'BaseRequest': self.base_request,
+                'Msg': {
+                    'Type': 3,
+                    'MediaId': mediaId,
+                    'FromUserName': self.my_account['UserName'],
+                    'ToUserName': toUserName.encode('utf8'),
+                    'LocalID': str(time.time() * 1e7),
+                    'ClientMsgId': str(time.time() * 1e7), }, }
+        payloads['Msg']['Type'] = 47
+        payloads['Msg']['EmojiFlag'] = 2
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36',
+            'Content-Type': 'application/json;charset=UTF-8', }
+        r = self.session.post(url, data = json.dumps(payloads, ensure_ascii = False), headers = headers)
+        return True
 
     def send_image(self, fileDir, toUserName = None):
         if toUserName is None: toUserName = self.my_account['UserName']

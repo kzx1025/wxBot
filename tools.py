@@ -2,6 +2,7 @@ __author__ = 'iceke'
 
 
 import re
+import os
 
 def emoji_dealer(l):
     regex = re.compile('^(.*?)(?:<span class="emoji (.*?)"></span>(.*?))+$')
@@ -16,4 +17,4 @@ def check_file(fileDir):
     except:
         return False
 
-#print u'\u5f20\u96c4'
+#print os.listdir("data/emoji/")

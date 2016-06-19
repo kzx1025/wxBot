@@ -122,14 +122,16 @@ class TulingWXBot(WXBot):
             # 处理聊天逻辑
             self.send_msg_by_uid(self.tuling_auto_reply(msg['user']['id'], msg['content']['data']), msg['user']['id'])
 
-        elif msg['msg_type_id'] == 3 and (msg['content']['type'] == 0 or msg['content']['type'] == 10 or msg['content']['type'] ==3
-                                          or msg['content']['type'] == 4):  # group text message
+        elif msg['msg_type_id'] == 3 and (msg['content']['type'] == 0 or msg['content']['type'] == 10
+                                          or msg['content']['type'] ==3 or msg['content']['type']  == 6
+                                          or msg['content']['type'] == 4 or msg['content']['type'] == 12):  # group text message
             if self.master_mode == 1:
                 #if msg['content']['data'] == 'test':
                    # print 'send picture!'
                    # self.send_image('data/image/img_476620686838734673.jpg', msg['user']['id'])
                     #self.send_file('data/voice/voice_6364321762328836396.mp3', msg['user']['id'])
                 return
+
             # 处理撤回逻辑
             print 'group message'
             if msg['content']['redraw'] == 1:
@@ -152,12 +154,12 @@ class TulingWXBot(WXBot):
                 if int(redraw_type) == 3:
                     print data.replace('u', '').replace('\'', '')
                     self.send_image(data.replace('u', '').replace('\'', ''), msg['user']['id'])
-                    reply = u'刚才'+username.decode("unicode_escape").replace("\'","").replace("u","")+u'撤回得是：'+\
+                    reply = u'刚才'+username.decode("unicode_escape").replace("\'","").replace("u","")+u'撤回得是'+\
                         u'这张图片'
                     self.send_msg_by_uid(reply, msg['user']['id'])
                 elif int(redraw_type) == 4:
                     self.send_file(data.replace('u', '').replace('\'', ''), msg['user']['id'])
-                    reply = u'刚才'+username.decode("unicode_escape").replace("\'","").replace("u","")+u'撤回得是：'+\
+                    reply = u'刚才'+username.decode("unicode_escape").replace("\'","").replace("u","")+u'撤回得是'+\
                         u'这段语音'
                     self.send_msg_by_uid(reply, msg['user']['id'])
                 else:
@@ -183,6 +185,37 @@ class TulingWXBot(WXBot):
                 print (msg_id, message)
                 print u"群消息存入redis成功"
 
+            # 处理表情消息
+            if msg['content']['type'] == 6:
+                self.send_random_emoji(msg['user']['id'])
+                return
+
+            # 处理新拉入群操作
+            if msg['content']['is_entergroup'] == 1:
+                reply = u'各位好，我是长者。'
+                reply += u'我的功能有：1.艾特我，我会和你对话； 2.在群聊中进行随机说话； 3.可以咨询天气或者部分词条，回复推荐电影，推荐豆瓣电影，回复我要看片，推荐老司机电影；' \
+                         u'4.支持群聊天消息撤回的重发，包括文字，图片，语音，暂不支持表情；5.回复艾特全员，自动帮你艾特全部群成员；6.当有红包消息时，自动艾特所有群成员进行提醒'
+                self.send_msg_by_uid(reply, msg['user']['id'])
+                return
+
+
+            # 处理红包
+            if msg['content']['is_hongbao'] == 1:
+                reply = u'有人发红包啦！！ '
+                for member_name in self.get_all_group_member_name(msg['user']['id']):
+                    reply+='@'+member_name+' '
+                self.send_msg_by_uid(reply, msg['user']['id'])
+                return
+
+            # 处理艾特全员逻辑
+            if u'艾特' in msg['content']['desc'] and u'全员' in msg['content']['desc']:
+                reply = ''
+                for member_name in self.get_all_group_member_name(msg['user']['id']):
+                    reply+='@'+member_name+' '
+                self.send_msg_by_uid(reply,msg['user']['id'])
+                return
+
+
             # 处理文本消息
             if 'detail' in msg['content']:
                 #my_names = self.get_group_member_name(self.my_account['UserName'], msg['user']['id'])
@@ -193,6 +226,7 @@ class TulingWXBot(WXBot):
                     my_names['nickname2'] = self.my_account['NickName']
                 if 'RemarkName' in self.my_account and self.my_account['RemarkName']:
                     my_names['remark_name2'] = self.my_account['RemarkName']
+
 
 
                 is_at_me = False
@@ -229,9 +263,11 @@ class TulingWXBot(WXBot):
                 print random_value
 
                 index = random.randint(0, 5)
-                random_say = [u'23333333', u'能别说话了么，烦',u'呵呵',u'哦？',u'能不能聊点别的', u'可以的']
+                random_say = [u'23333333', u'啧啧',u'呵呵',u'哦？',u'嘎嘎', u'可以的']
 
-                if is_at_me is False and random_value > 98:
+                if is_at_me is False and (random_value == 95 or random_value == 96):
+                    self.send_random_emoji(msg['user']['id'])
+                if is_at_me is False and random_value ==99:
                     src_name = msg['user']['name']
                     reply = ''
                     if msg['content']['type'] == 0:  # text message
@@ -244,7 +280,7 @@ class TulingWXBot(WXBot):
                     print u"主动发言:"+reply
                     self.send_msg_by_uid(reply, msg['user']['id'])
 
-                if is_at_me is False and random_value <=-1 and random_value >100:
+                if is_at_me is False and random_value ==98:
                     src_name = msg['user']['name']
                     reply = ''
                     if msg['content']['type'] == 0:  # text message

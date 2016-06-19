@@ -69,6 +69,7 @@ data/*.json
 /data/image/*.jpg
 data/image/*.png
 data/voice/*.mp3
+data/emoji/*.gif
 
 qr.png
 /*.jpg
