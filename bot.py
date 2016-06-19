@@ -92,7 +92,7 @@ class TulingWXBot(WXBot):
             return
         if msg['msg_type_id'] == 1 and msg['content']['type'] == 0:  # reply to self
             self.auto_switch(msg)
-        elif msg['msg_type_id'] == 4 and msg['content']['type'] == 0:  # text message from contact
+        elif msg['msg_type_id'] == 4 and (msg['content']['type'] == 0 or msg['content']['type'] == 6):  # text message from contact
             # 处理管理员公告
                 # 进行密码登录
             print msg['user']['id']
@@ -115,6 +115,9 @@ class TulingWXBot(WXBot):
                 return
             if self.master_mode == 1:
                 return
+
+            if msg['content']['type'] == 6:
+                self.send_random_emoji(msg['user']['id'])
 
             # 处理推荐系统逻辑
             if self.recommend(msg['user']['id'], msg['content']['data']):
@@ -207,6 +210,11 @@ class TulingWXBot(WXBot):
                 self.send_msg_by_uid(reply, msg['user']['id'])
                 return
 
+            if 'test' in msg['content']['desc']:
+                #self.send_msg_by_uid('<span class=\"emoji emoji1f61e\">', msg['user']['id'])
+                #self.send_msg_by_uid('\"emoji emoji1f61e\"', msg['user']['id'])
+                self.send_msg_by_uid('<img class=\"emoji emoji1f625\"  src=\"https://wx.qq.com/zh_CN/htmledition/v2/images/spacer.gif\">', msg['user']['id'])
+                return
             # 处理艾特全员逻辑
             if u'艾特' in msg['content']['desc'] and u'全员' in msg['content']['desc']:
                 reply = ''

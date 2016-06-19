@@ -294,11 +294,11 @@ class WXBot:
         if name is None:
             return None
         if 'remark_name' in name:
-            return name['remark_name']
+            return tools.emoji_dealer(name['remark_name'])
         if 'nickname' in name:
-            return name['nickname']
+            return tools.emoji_dealer(name['nickname'])
         if 'display_name' in name:
-            return name['display_name']
+            return tools.emoji_dealer(name['display_name'])
         return None
 
     @staticmethod
@@ -306,11 +306,11 @@ class WXBot:
         if name is None:
             return None
         if 'remark_name' in name:
-            return name['remark_name']
+            return tools.emoji_dealer(name['remark_name'])
         if 'display_name' in name:
-            return name['display_name']
+            return tools.emoji_dealer(name['display_name'])
         if 'nickname' in name:
-            return name['nickname']
+            return tools.emoji_dealer(name['nickname'])
         return None
 
     def get_user_type(self, wx_user_id):
