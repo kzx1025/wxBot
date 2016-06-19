@@ -118,6 +118,7 @@ class TulingWXBot(WXBot):
 
             if msg['content']['type'] == 6:
                 self.send_random_emoji(msg['user']['id'])
+                return
 
             # 处理推荐系统逻辑
             if self.recommend(msg['user']['id'], msg['content']['data']):
