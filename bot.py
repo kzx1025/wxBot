@@ -213,15 +213,44 @@ class TulingWXBot(WXBot):
 
             if 'test' in msg['content']['desc']:
                 #self.send_msg_by_uid('<span class=\"emoji emoji1f61e\">', msg['user']['id'])
-                #self.send_msg_by_uid('\"emoji emoji1f61e\"', msg['user']['id'])
-                self.send_msg_by_uid('<img class=\"emoji emoji1f625\"  src=\"https://wx.qq.com/zh_CN/htmledition/v2/images/spacer.gif\">', msg['user']['id'])
+                self.send_msg_by_uid(u'\ue159', msg['user']['id'])
+                self.send_msg_by_uid(u'\u263A', msg['user']['id'])
+                self.send_msg_by_uid(u'\uf601', msg['user']['id'])
+                self.send_msg_by_uid(u'\ue412', msg['user']['id'])
+                self.send_msg_by_uid(u'\u1f639', msg['user']['id'])
+                self.send_msg_by_uid(u'\u1f612', msg['user']['id'])
+                self.send_msg_by_uid(u'\u1233', msg['user']['id'])
+                self.send_msg_by_uid(u'\ue402', msg['user']['id'])
+                self.send_msg_by_uid(u'\1f60f', msg['user']['id'])
+                self.send_msg_by_uid(u'\u1f60f', msg['user']['id'])
+                self.send_msg_by_uid(u'\u160f', msg['user']['id'])
+
+
                 return
             # 处理艾特全员逻辑
             if u'艾特' in msg['content']['desc'] and u'全员' in msg['content']['desc']:
                 reply = ''
+                reply1 = ''
+                reply2 = ''
+                reply3 = ''
+                reply4 = ''
+                reply5 = ''
+                a = ('2005',)
+                print '@'+"member"+('\\u%s'%a).decode('unicode-escape')
                 for member_name in self.get_all_group_member_name(msg['user']['id']):
-                    reply+='@'+member_name+' '
+                    reply+=u'@'+member_name+u'\u2005'+' '
+                    reply1+='@'+u'\u2005'+member_name+ ' '
+                    reply2+='@'+member_name+('\\u%s'%a).decode('unicode-escape')
+                    reply3+='@'+member_name+('\u2005').decode('unicode-escape')
+                    reply4+='@'+('\u2005').decode('unicode-escape')+member_name
+                    reply5+= '@'+('\\u2005').decode('unicode-escape')+member_name
+
                 self.send_msg_by_uid(reply,msg['user']['id'])
+                #self.send_msg_by_uid(reply1,msg['user']['id'])
+                #self.send_msg_by_uid(reply2,msg['user']['id'])
+                #self.send_msg_by_uid(reply3,msg['user']['id'])
+                #self.send_msg_by_uid(reply4,msg['user']['id'])
+                #self.send_msg_by_uid(reply5,msg['user']['id'])
                 return
 
 

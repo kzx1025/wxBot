@@ -645,6 +645,8 @@ class WXBot:
                        'content': content,
                        'to_user_id': msg['ToUserName'],
                        'user': user}
+            if message['user']['id'] == 'unknown':
+                self.get_contact()
             print message
             self.handle_msg_all(message)
 
@@ -703,6 +705,7 @@ class WXBot:
     def send_msg_by_uid(self, word, dst='filehelper'):
         url = self.base_uri + '/webwxsendmsg?pass_ticket=%s' % self.pass_ticket
         msg_id = str(int(time.time() * 1000)) + str(random.random())[:5].replace('.', '')
+
         word = self.to_unicode(word)
         params = {
             'BaseRequest': self.base_request,
@@ -715,6 +718,10 @@ class WXBot:
                 "ClientMsgId": msg_id
             }
         }
+        if '@' in word:
+            print word
+            print '为艾特消息！'
+            # params['Msg']['Type'] = 2
         headers = {'content-type': 'application/json; charset=UTF-8'}
         data = json.dumps(params, ensure_ascii=False).encode('utf8')
         try:
