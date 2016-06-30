@@ -33,7 +33,10 @@ def emoji_dealer(name):
         #emoji_key = match[0][1][5:].replace('\'','').replace('u','')
         #print emoji_key
         #emoji_value = 'u\'\\u'+emoji_map[emoji_key]+'\''
-        flag = re.search('emoji([\da-z]{5})', match[0][0]+match[0][1]+match[0][2]).groups()
+        try:
+            flag = re.search('emoji([\da-z]{5})', match[0][0]+match[0][1]+match[0][2]).groups()
+        except:
+            return name[0:2]
         #print flag
         name = match[0][0]+('\\U000%s'%flag).decode('unicode-escape')+match[0][2]
     return name
