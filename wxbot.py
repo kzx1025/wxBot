@@ -659,13 +659,15 @@ class WXBot:
 
     def proc_msg(self):
         self.test_sync_check()
+        print 'proc_msg!!!'
         while True:
             check_time = time.time()
             try:
                 [retcode, selector] = self.sync_check()
-                # print '[DEBUG] sync_check:', retcode, selector
+                #print '[DEBUG] sync_check:', retcode, selector
                 if retcode == '1100':  # 从微信客户端上登出
                     break
+                    #pass
                 elif retcode == '1101':  # 从其它设备上登了网页微信
                     break
                 elif retcode == '0':
@@ -1088,7 +1090,7 @@ class WXBot:
             'synckey': self.sync_key_str,
             '_': int(time.time()),
         }
-        url = 'https://' + self.sync_host + '.weixin.qq.com/cgi-bin/mmwebwx-bin/synccheck?' + urllib.urlencode(params)
+        url = 'https://' + self.sync_host + '.wx.qq.com/cgi-bin/mmwebwx-bin/synccheck?' + urllib.urlencode(params)
         try:
             r = self.session.get(url, timeout=60)
             r.encoding = 'utf-8'
