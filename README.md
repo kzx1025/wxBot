@@ -1,7 +1,19 @@
-# wxBot [![star this repo](http://github-svg-buttons.herokuapp.com/star.svg?user=liuwons&repo=wxBot&style=flat&background=1081C1)](http://github.com/liuwons/wxBot) [![fork this repo](http://github-svg-buttons.herokuapp.com/fork.svg?user=liuwons&repo=wxBot&style=flat&background=1081C1)](http://github.com/liuwons/wxBot/fork) ![python](https://img.shields.io/badge/python-2.7-ff69b4.svg)
+# wxBot
 
 **wxBot** 是用Python包装Web微信协议实现的微信机器人框架。
 
+##根据框架目前我所添加的功能有:
+- 1.加入推荐电影和小电影模块，优化聊天逻辑(回复 推荐电影 和 我要看片 即可)
+- 2.添加重发群成员撤回消息的功能(需要配置redis，当然你也可以换成别的数据库，内存数据库为佳)，包括文字，图片，语音消息，表情过一阵支持
+- 3.加入通过密钥可以通过长者发布群公告的功能
+- 4.支持随机发送表情(可以用于斗图),发红包自动提醒全成员，回复艾特全员自动帮你艾特全部群成员
+- *解决了wxBot框架群昵称显示unknown的bug和emoji表情无法正常显示的bug
+
+##下一步计划:
+- 添加水印图片传递的功能
+
+
+##框架介绍
 目前的消息支持情况:
 
 - [ ] 群消息
@@ -27,14 +39,6 @@
   - [ ] 转账
 
 
-
-Web微信协议参考资料：
-
-[挖掘微信Web版通信的全过程](http://www.tanhao.me/talk/1466.html/)
-
-[微信协议简单调研笔记](http://www.blogjava.net/yongboy/archive/2015/11/05/410636.html)
-
-[qwx: WeChat Qt frontend 微信Qt前端](https://github.com/xiangzhai/qwx)
 
 
 ## 1 环境与依赖
@@ -244,13 +248,3 @@ python test.py
     ```python
     python bot.py
     ```
-
-## 6 类似项目
-
-[feit/Weixinbot](https://github.com/feit/Weixinbot) Nodejs 封装网页版微信的接口，可编程控制微信消息
-
-[littlecodersh/ItChat](https://github.com/littlecodersh/ItChat) 微信个人号接口、微信机器人及命令行微信，Command line talks through Wechat
-
-[Urinx/WeixinBot](https://github.com/Urinx/WeixinBot) 网页版微信API，包含终端版微信及微信机器人
-
-[zixia/wechaty](https://github.com/zixia/wechaty) Wechaty is wechat for bot in Javascript(ES6). It's a Personal Account Robot Framework/Library.
